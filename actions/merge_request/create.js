@@ -1,13 +1,12 @@
 const HTTPS = require('https');
 const UTIL = require('util');
-const CATALYST = require('zcatalyst-sdk-node');
 
 const SHARED = require('./shared');
 const CLIQ_DETAILS = require('../../cliq_details');
 const CONNECTOR_DETAIL = require('../../connector_details');
 
-module.exports = async function (GIT_REQUEST, GIT_RESPONSE, ROW_ID) {
-    const APP = CATALYST.initialize(GIT_REQUEST);
+module.exports = async function (GIT_REQUEST, GIT_RESPONSE, DATASTORE_ROW, ASSIGNEE_CLIQ_MEMBER_MAP) {
+    const APP = GIT_RESPONSE.locals.catalyst_app;
 
     const MESSAGE_ENDPOINT = CLIQ_DETAILS.message_endpoint(GIT_REQUEST.params.chatid);
     const GITLAB_BODY = GIT_REQUEST.body;
@@ -31,7 +30,7 @@ module.exports = async function (GIT_REQUEST, GIT_RESPONSE, ROW_ID) {
 
                 try {
                     await APP.datastore().table('message_details').updateRow({
-                        ROWID: ROW_ID,
+                        ROWID: DATASTORE_ROW.ROWID,
                         message_id: MESSAGE_ID.trim()
                     });
                     GIT_RESPONSE.status(200).send("ok");
@@ -50,10 +49,6 @@ module.exports = async function (GIT_REQUEST, GIT_RESPONSE, ROW_ID) {
         GIT_RESPONSE.status(500).send(UTIL.inspect(ERROR));
     });
 
-    const BODY_CHANGES = {
-        thumbnail: "https://img.icons8.com/officel/2x/pull-request.png"
-    }
-
-    REQUEST_HANDLER.write(JSON.stringify(SHARED.construct_cliq_body(BODY_CHANGES, GITLAB_BODY)));
+    REQUEST_HANDLER.write(JSON.stringify(SHARED.construct_cliq_body(GITLAB_BODY, ASSIGNEE_CLIQ_MEMBER_MAP)));
     REQUEST_HANDLER.end();
 }
