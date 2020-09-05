@@ -1,0 +1,10 @@
+{
+  "execution": {
+    "main": "index.js"
+  },
+  "deployment": {
+    "stack": "node10",
+    "name": "sparkler_controller",
+    "type": "advancedio"
+  }
+}
